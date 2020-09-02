@@ -5,6 +5,7 @@ import Link from '@material-ui/core/Link';
 import Button from '@material-ui/core/Button';
 
 import Logo from '../assets/images/clt-icon.png';
+import Blockies from './Blockies';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -30,6 +31,11 @@ const useStyles = makeStyles((theme) => ({
   logo: {
     width: 68,
     height: 68
+  },
+  address: {
+    fontSize: 10,
+    textAlign: 'center',
+    color: theme.palette.text.secondary
   }
 }));
 
@@ -43,21 +49,20 @@ const Header = props => {
         <Link href="https://cexlt.io">
           <img className={classes.logo} src={Logo} alt="clt icon" />
         </Link>
-        { (web3 && address) ?
-          (
-            <div></div>
-          )
-          :
-          (
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={onConnect}
-            >
-              Connect Account
-            </Button>
-          )
-        }
+        { (web3 && address) ? (
+          <Box>
+            <Blockies address={address} size={12} />
+            <div className={classes.address}>{address.substring(0, 6)}</div>
+          </Box>
+        ) : (
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={onConnect}
+          >
+            Connect Account
+          </Button>
+        ) }
       </div>
     </Box>
   );
