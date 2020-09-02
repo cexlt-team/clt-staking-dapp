@@ -3,12 +3,26 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@material-ui/core": "^4.11.0",
+    "@material-ui/icons": "^4.9.1",
+    "@material-ui/lab": "^4.0.0-alpha.56",
+    "@myetherwallet/mewconnect-web-client": "^2.1.4",
+    "@portis/web3": "^2.0.0-beta.59",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
+    "@toruslabs/torus-embed": "^1.8.3",
+    "@unilogin/provider": "^0.6.1",
+    "@walletconnect/web3-provider": "^1.2.2",
+    "add": "^2.0.6",
+    "authereum": "^0.0.4-beta.193",
+    "fortmatic": "^2.2.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-scripts": "3.4.3"
+    "react-scripts": "3.4.3",
+    "web3": "^1.2.11",
+    "web3modal": "^1.9.0",
+    "yarn": "^1.22.5"
   },
   "scripts": {
     "start": "react-scripts start",
