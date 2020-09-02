@@ -1,6 +1,12 @@
 import React, { useState, Fragment } from 'react';
 import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
+import { makeStyles } from '@material-ui/core/styles';
+import Paper from '@material-ui/core/Paper';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+
+import TabPanel from './components/TabPanel'
 
 import Web3 from 'web3';
 import Web3Modal from 'web3modal';
@@ -65,11 +71,44 @@ const web3Modal = new Web3Modal({
   providerOptions
 });
 
+const useStyles = makeStyles((theme) => ({
+  root: {
+    width: '100vw',
+    height: '100vh',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  contentWrap: {
+    width: '762px',
+    padding: '20px 20px 0px',
+    '@media (min-width: 280px) and (max-width: 480px)': {
+      width: 'calc(100% - 20px)',
+      padding: '5px 5px 0px'
+    }
+  }
+}));
+
 const App = () => {
+  const classes = useStyles();
+
+  const [tabValue, setTabValue] = useState(1)
+
   const [address, setAddress] = useState('')
   const [provider, setProvider] = useState(new Web3.providers.HttpProvider('https://ropsten.infura.io/v3/'+INFURA_IDS[Math.floor(Math.random() * 100 % 3)]))
   const [web3, setWeb3] = useState(new Web3(provider))
   const [connected, setConnected] = useState(false)
+
+  const a11yProps = index => {
+    return {
+      id: `full-width-tab-${index}`,
+      'aria-controls': `full-width-tabpanel-${index}`,
+    };
+  };
+
+  const handleTab = (event, newValue) => {
+    setTabValue(newValue);
+  };
 
   const resetApp = async () => {
     if (web3 && web3.currentProvider && web3.currentProvider.close) {
@@ -111,7 +150,33 @@ const App = () => {
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
         <Header web3={web3} address={address} onConnect={onConnect} />
-        <div>Dapp</div>
+        <div className={classes.root}>
+          <Paper className={classes.contentWrap} elevation={3}>
+            <Tabs
+              value={tabValue}
+              onChange={handleTab}
+              indicatorColor="primary"
+              textColor="primary"
+              variant="fullWidth"
+              aria-label="tab"
+            >
+              <Tab label="Stake" {...a11yProps(0)}  disabled={!connected} />
+              <Tab label="Withdraw" {...a11yProps(1)} />
+              <Tab label="Claim rewards" {...a11yProps(2)} disabled={!connected} />
+            </Tabs>
+            <div>
+              <TabPanel value={tabValue} index={0}>
+                Stake
+              </TabPanel>
+              <TabPanel value={tabValue} index={1}>
+                Withdraw
+              </TabPanel>
+              <TabPanel value={tabValue} index={2}>
+                Claim rewards
+              </TabPanel>
+            </div>
+          </Paper>
+        </div>
       </ThemeProvider>
     </Fragment>
   );
