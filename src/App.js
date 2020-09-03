@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { makeStyles } from '@material-ui/core/styles';
@@ -25,6 +25,8 @@ import MewConnect from '@myetherwallet/mewconnect-web-client';
 import theme from './theme';
 
 import Header from './components/Header';
+
+import { UNIPOOL, UNIPOOL_ABI } from './lib/contracts';
 
 const INFURA_IDS = [
   'e8e1d9e3d7e64288928f45d9f6c40ec2',
@@ -95,12 +97,13 @@ const useStyles = makeStyles((theme) => ({
 const App = () => {
   const classes = useStyles();
 
-  const [tabValue, setTabValue] = useState(1)
+  const [tabValue, setTabValue] = useState(1);
 
-  const [address, setAddress] = useState('')
-  const [provider, setProvider] = useState(new Web3.providers.HttpProvider('https://ropsten.infura.io/v3/'+INFURA_IDS[Math.floor(Math.random() * 100 % 3)]))
-  const [web3, setWeb3] = useState(new Web3(provider))
-  const [connected, setConnected] = useState(false)
+  const [address, setAddress] = useState('');
+  const [provider, setProvider] = useState(new Web3.providers.HttpProvider('https://ropsten.infura.io/v3/'+INFURA_IDS[Math.floor(Math.random() * 100 % 3)]));
+  const [web3, setWeb3] = useState(new Web3(provider));
+  const [connected, setConnected] = useState(false);
+  const [staked, setStaked] = useState(0);
 
   const a11yProps = index => {
     return {
@@ -147,6 +150,20 @@ const App = () => {
     setWeb3(web3);
   };
 
+  useEffect(() => {
+    if (connected && web3 && address !== '') {
+      const contract = new web3.eth.Contract(UNIPOOL_ABI, UNIPOOL)
+
+      contract.methods.balanceOf(address).call().then(result => {
+        const value = web3.utils.fromWei(result, 'ether')
+        
+        setStaked(value)
+      }).catch(error => {
+        console.log(error)
+      })
+    }
+  }, [address, connected, web3])
+
   return (
     <Fragment>
       <ThemeProvider theme={theme}>
@@ -163,16 +180,16 @@ const App = () => {
               variant="fullWidth"
               aria-label="tab"
             >
-              <Tab label="Stake" {...a11yProps(0)}  disabled={!connected} />
+              <Tab label="Stake" {...a11yProps(0)} />
               <Tab label="Withdraw" {...a11yProps(1)} />
-              <Tab label="Claim rewards" {...a11yProps(2)} disabled={!connected} />
+              <Tab label="Claim rewards" {...a11yProps(2)} />
             </Tabs>
             <div>
               <TabPanel value={tabValue} index={0}>
-                <Stake />
+                <Stake connected={connected} address={address} web3={web3} staked={staked} />
               </TabPanel>
               <TabPanel value={tabValue} index={1}>
-                <Withdraw connected={connected} address={address} web3={web3} />
+                <Withdraw connected={connected} address={address} web3={web3} staked={staked} />
               </TabPanel>
               <TabPanel value={tabValue} index={2}>
                 <Rewards />

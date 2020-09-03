@@ -17,6 +17,7 @@
     "@walletconnect/web3-provider": "^1.2.2",
     "add": "^2.0.6",
     "authereum": "^0.0.4-beta.193",
+    "ethers": "^5.0.9",
     "fortmatic": "^2.2.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
