@@ -6,7 +6,10 @@ import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 
-import TabPanel from './components/TabPanel'
+import TabPanel from './components/TabPanel';
+import Stake from './components/Stake';
+import Withdraw from './components/Withdraw';
+import Rewards from './components/Rewards';
 
 import Web3 from 'web3';
 import Web3Modal from 'web3modal';
@@ -166,13 +169,13 @@ const App = () => {
             </Tabs>
             <div>
               <TabPanel value={tabValue} index={0}>
-                Stake
+                <Stake />
               </TabPanel>
               <TabPanel value={tabValue} index={1}>
-                Withdraw
+                <Withdraw connected={connected} address={address} web3={web3} />
               </TabPanel>
               <TabPanel value={tabValue} index={2}>
-                Claim rewards
+                <Rewards />
               </TabPanel>
             </div>
           </Paper>
