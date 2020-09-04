@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Input from '@material-ui/core/Input';
 import Alert from '@material-ui/lab/Alert';
+import AlertTitle from '@material-ui/lab/AlertTitle';
 import Button from '@material-ui/core/Button';
 
 import UniBalance from './UniBalance';
@@ -26,10 +27,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Stake = props => {
-  const { web3, address, connected, staked, balance, handleAlert } = props;
+  const { web3, address, connected, staked, balance, handleAlert, getBalance, setPending } = props;
 
   const [amount, setAmount] = useState(0);
   const [disabled, setDisabled] = useState(true);
+  const [showResult, setShowResult] = useState(false);
+  const [transaction, setTransaction] = useState('');
 
   const classes = useStyles();
 
@@ -66,8 +69,6 @@ const Stake = props => {
   }
 
   const handleStake = async () => {
-    setDisabled(true);
-
     if (isNaN(amount) !== false) {
       handleAlert('error', 'Error', 'Stake amount can only be entered in numbers');
       return false
@@ -84,18 +85,34 @@ const Stake = props => {
     }
 
     try {
+      setDisabled(true);
+      setPending(true);
       const unipool = new web3.eth.Contract(UNIPOOL_ABI, UNIPOOL, { gasLimit: 150000 });
       await setApprove();
 
       const newAmount = web3.utils.toWei(amount, 'ether');
 
-      const stake = await unipool.methods.stake(newAmount).send({ from: address });
-      console.log(unipool, stake);
+      await unipool.methods.stake(newAmount).send({ from: address }).then(result => {
+        console.log(result);
 
-      return stake;
+        setPending(false);
+        setTransaction(result.transactionHash);
+        getBalance();
+        handleAlert('info', `${amount} UNI-V2 staked`);
+        setShowResult(true);
+      }).catch(err => {
+        console.log(err)
+      })
     } catch (err) {
-      throw new Error(err.message)
+      setDisabled(false);
+      handleAlert('error', 'Error', err.message);
     }
+  }
+
+  const handleRefresh = () => {
+    setShowResult(false);
+    setDisabled(false);
+    setAmount(0);
   }
 
   useEffect(() => {
@@ -123,7 +140,22 @@ const Stake = props => {
       {!connected ? (
         <Alert severity="warning">Please, connect your wallet to get started.</Alert>
       ) : (
-        <Button variant="contained" color="primary" fullWidth onClick={handleStake}>Stake</Button>
+        <Button variant="contained" color="primary" fullWidth onClick={handleStake} disabled={disabled}>Stake</Button>
+      )}
+      {showResult && (
+        <div>
+          <div className={classes.marginTop}>
+            <Alert severity="success">
+              <AlertTitle>Staking Transaction</AlertTitle>
+              <a href={`https://ropsten.etherscan.io/tx/${transaction}`} target="_blank" rel="noopener noreferrer">
+                {transaction}
+              </a>
+            </Alert>
+          </div>
+          <div className={classes.marginTop}>
+            <Button variant="contained" color="secondary" fullWidth onClick={handleRefresh}>Refresh</Button>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -28,6 +28,7 @@ import MewConnect from '@myetherwallet/mewconnect-web-client';
 import theme from './theme';
 
 import Header from './components/Header';
+import Loader from './components/Loader';
 
 import { UNIPOOL, UNIPOOL_ABI, UNIV2, UNIV2_ABI } from './lib/contracts';
 
@@ -112,6 +113,7 @@ const App = () => {
   const [alertType, setAlertType] = useState('');
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
+  const [pending, setPending] = useState(false);
 
   const a11yProps = index => {
     return {
@@ -173,6 +175,29 @@ const App = () => {
     setAlertOpen(false);
   }
 
+  const getBalance = () => {
+    if (connected && web3 && address !== '') {
+      const unipool = new web3.eth.Contract(UNIPOOL_ABI, UNIPOOL);
+
+      unipool.methods.balanceOf(address).call().then(result => {
+        const value = web3.utils.fromWei(result, 'ether')
+        
+        setStaked(value)
+      }).catch(error => {
+        console.log(error)
+      })
+
+      const uniToken = new web3.eth.Contract(UNIV2_ABI, UNIV2);
+
+      uniToken.methods.balanceOf(address).call().then(result => {
+        const value = web3.utils.fromWei(result, 'ether')
+        setBalance(value)
+      }).catch(error => {
+        console.log(error)
+      })
+    }
+  }
+
   useEffect(() => {
     if (connected && web3 && address !== '') {
       const unipool = new web3.eth.Contract(UNIPOOL_ABI, UNIPOOL);
@@ -218,10 +243,27 @@ const App = () => {
             </Tabs>
             <div>
               <TabPanel value={tabValue} index={0}>
-                <Stake connected={connected} address={address} web3={web3} staked={staked} balance={balance} handleAlert={handleAlert} />
+                <Stake
+                  connected={connected}
+                  address={address}
+                  web3={web3}
+                  staked={staked}
+                  balance={balance}
+                  handleAlert={handleAlert}
+                  getBalance={getBalance}
+                  setPending={setPending}
+                />
               </TabPanel>
               <TabPanel value={tabValue} index={1}>
-                <Withdraw connected={connected} address={address} web3={web3} staked={staked} balance={balance} handleAlert={handleAlert} />
+                <Withdraw
+                  connected={connected}
+                  address={address} web3={web3}
+                  staked={staked}
+                  balance={balance}
+                  handleAlert={handleAlert}
+                  getBalance={getBalance}
+                  setPending={setPending}
+                />
               </TabPanel>
               <TabPanel value={tabValue} index={2}>
                 <Rewards />
@@ -240,6 +282,9 @@ const App = () => {
             {alertMessage}
           </Alert>
         </Snackbar>
+        {pending && (
+          <Loader />
+        )}
       </ThemeProvider>
     </Fragment>
   );
