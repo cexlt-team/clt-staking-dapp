@@ -20,9 +20,13 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Withdraw = props => {
-  const { web3, address, connected, staked, balance, handleAlert } = props;
+  const { web3, address, connected, staked, balance, handleAlert, setPending } = props;
 
   const classes = useStyles();
+
+  const handleWithdraw = () => {
+
+  }
 
   return (
     <div>
@@ -37,7 +41,7 @@ const Withdraw = props => {
       {!connected ? (
         <Alert severity="warning">Please, connect your wallet to get started.</Alert>
       ) : (
-        <Button variant="contained" color="primary" fullWidth>Withdraw</Button>
+        <Button variant="contained" color="primary" fullWidth onClick={handleWithdraw}>Withdraw</Button>
       )}
     </div>
   );
