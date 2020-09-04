@@ -59,15 +59,16 @@ const Rewards = props => {
         handleAlert('info', `${uniStaked} CLT claimed`);
         setShowResult(true);
       }).catch(err => {
+        setPending(false);
         console.log(err)
       })
     } catch (err) {
+      setPending(false);
       handleAlert('error', 'Error', err.message);
     }
   }
 
   const handleRefresh = () => {
-    setPending(false);
     setShowResult(false);
   }
 
