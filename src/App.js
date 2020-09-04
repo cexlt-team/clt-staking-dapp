@@ -5,6 +5,9 @@ import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import Snackbar from '@material-ui/core/Snackbar';
+import Alert from '@material-ui/lab/Alert';
+import AlertTitle from '@material-ui/lab/AlertTitle';
 
 import TabPanel from './components/TabPanel';
 import Stake from './components/Stake';
@@ -26,7 +29,7 @@ import theme from './theme';
 
 import Header from './components/Header';
 
-import { UNIPOOL, UNIPOOL_ABI } from './lib/contracts';
+import { UNIPOOL, UNIPOOL_ABI, UNIV2, UNIV2_ABI } from './lib/contracts';
 
 const INFURA_IDS = [
   'e8e1d9e3d7e64288928f45d9f6c40ec2',
@@ -104,6 +107,11 @@ const App = () => {
   const [web3, setWeb3] = useState(new Web3(provider));
   const [connected, setConnected] = useState(false);
   const [staked, setStaked] = useState(0);
+  const [balance, setBalance] = useState(0);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertType, setAlertType] = useState('');
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
 
   const a11yProps = index => {
     return {
@@ -150,14 +158,38 @@ const App = () => {
     setWeb3(web3);
   };
 
+  const handleAlert = (type, title, message) => {
+    setAlertType(type);
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertOpen(true);
+  }
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setAlertOpen(false);
+  }
+
   useEffect(() => {
     if (connected && web3 && address !== '') {
-      const contract = new web3.eth.Contract(UNIPOOL_ABI, UNIPOOL)
+      const unipool = new web3.eth.Contract(UNIPOOL_ABI, UNIPOOL);
 
-      contract.methods.balanceOf(address).call().then(result => {
+      unipool.methods.balanceOf(address).call().then(result => {
         const value = web3.utils.fromWei(result, 'ether')
         
         setStaked(value)
+      }).catch(error => {
+        console.log(error)
+      })
+
+      const uniToken = new web3.eth.Contract(UNIV2_ABI, UNIV2);
+
+      uniToken.methods.balanceOf(address).call().then(result => {
+        const value = web3.utils.fromWei(result, 'ether')
+        setBalance(value)
       }).catch(error => {
         console.log(error)
       })
@@ -186,10 +218,10 @@ const App = () => {
             </Tabs>
             <div>
               <TabPanel value={tabValue} index={0}>
-                <Stake connected={connected} address={address} web3={web3} staked={staked} />
+                <Stake connected={connected} address={address} web3={web3} staked={staked} balance={balance} handleAlert={handleAlert} />
               </TabPanel>
               <TabPanel value={tabValue} index={1}>
-                <Withdraw connected={connected} address={address} web3={web3} staked={staked} />
+                <Withdraw connected={connected} address={address} web3={web3} staked={staked} balance={balance} handleAlert={handleAlert} />
               </TabPanel>
               <TabPanel value={tabValue} index={2}>
                 <Rewards />
@@ -197,6 +229,17 @@ const App = () => {
             </div>
           </Paper>
         </div>
+        <Snackbar
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          open={alertOpen}
+          autoHideDuration={5000}
+          onClose={handleClose}
+        >
+          <Alert severity={alertType}>
+            <AlertTitle>{alertTitle}</AlertTitle>
+            {alertMessage}
+          </Alert>
+        </Snackbar>
       </ThemeProvider>
     </Fragment>
   );

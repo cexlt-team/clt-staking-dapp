@@ -9,15 +9,18 @@ const useStyles = makeStyles((theme) => ({
   contentWrap: {
     padding: 16
   },
+  mutedText: {
+    color: theme.palette.text.disabled
+  },
   bigBalance: {
-    marginTop: 8,
+    marginTop: theme.spacing(1),
     fontSize: '1.5rem',
     fontWeight: 'bold'
   }
 }));
 
 const Withdraw = props => {
-  const { web3, address, connected, staked } = props;
+  const { web3, address, connected, staked, balance, handleAlert } = props;
 
   const classes = useStyles();
 
@@ -25,7 +28,7 @@ const Withdraw = props => {
     <div>
       <Alert severity="info">Withdraw all of your staked UNI-V2 and claim any pending rewards.</Alert>
       <div className={classes.contentWrap}>
-        <UniBalance connected={connected} address={address} web3={web3} />
+        <UniBalance balance={balance} connected={connected} />
         <div>
           <div className={classes.mutedText}>Amount available to withdraw</div>
           <div className={classes.bigBalance}>{staked}</div>
