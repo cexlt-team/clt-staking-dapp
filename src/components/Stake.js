@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Input from '@material-ui/core/Input';
 import Alert from '@material-ui/lab/Alert';
@@ -125,7 +125,7 @@ const Stake = props => {
     <div>
       <Alert severity="info">Learn how to obtain UNI-V2 to participate in the rewards program</Alert>
       <div className={classes.contentWrap}>
-      <UniBalance balance={balance} connected={connected} />
+        <UniBalance balance={balance} connected={connected} />
         <Input
           disabled={disabled}
           fullWidth

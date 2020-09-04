@@ -266,7 +266,15 @@ const App = () => {
                 />
               </TabPanel>
               <TabPanel value={tabValue} index={2}>
-                <Rewards />
+                <Rewards
+                  connected={connected}
+                  address={address} web3={web3}
+                  staked={staked}
+                  balance={balance}
+                  handleAlert={handleAlert}
+                  getBalance={getBalance}
+                  setPending={setPending}
+                />
               </TabPanel>
             </div>
           </Paper>
