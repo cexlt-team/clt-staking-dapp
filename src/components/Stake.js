@@ -30,9 +30,12 @@ const Stake = props => {
   const { web3, address, connected, staked, balance, handleAlert, getBalance, setPending } = props;
 
   const [amount, setAmount] = useState(0);
-  const [disabled, setDisabled] = useState(true);
-  const [showResult, setShowResult] = useState(false);
-  const [transaction, setTransaction] = useState('');
+  const [approveDisabled, setApproveDisabled] = useState(true);
+  const [stakeDisabled, setStakeDisabled] = useState(true);
+  const [showApproveResult, setShowApproveResult] = useState(false);
+  const [showStakeResult, setShowStakeResult] = useState(false);
+  const [approveTransaction, setApproveTransaction] = useState('');
+  const [stakeTransaction, setStakeTransaction] = useState('');
 
   const classes = useStyles();
 
@@ -59,16 +62,23 @@ const Stake = props => {
       }
 
       if (allowance !== 0) {
-        const tx = await unitoken.methods.approve(UNIPOOL, '0').send({ from: address });
-        await tx.wait(1);
+        const zeroAmount = web3.utils.toWei('0', 'ether');
+        return unitoken.methods.approve(UNIPOOL, zeroAmount).send({ from: address }).then(async result => {
+          console.log(result);
+
+          return await unitoken.methods.approve(UNIPOOL, newAmount).send({ from: address });
+        })
       }
+
       return await unitoken.methods.approve(UNIPOOL, newAmount).send({ from: address });
     } catch (err) {
       throw new Error(err.message);
     }
   }
 
-  const handleStake = async () => {
+  const handleApprove = async () => {
+    setApproveDisabled(true);
+
     if (isNaN(amount) !== false) {
       handleAlert('error', 'Error', 'Stake amount can only be entered in numbers');
       return false
@@ -85,39 +95,56 @@ const Stake = props => {
     }
 
     try {
-      setDisabled(true);
+      setPending(true);
+
+      const result = await setApprove();
+      if (result.status) {
+        setPending(false);
+        setApproveTransaction(result.transactionHash);
+        handleAlert('info', `${amount} Approved`);
+        setShowApproveResult(true);
+        setStakeDisabled(false);
+      }
+    } catch (err) {
+      setApproveDisabled(false);
+      handleAlert('error', 'Error', err.message);
+    }
+  }
+
+  const handleStake = async () => {
+    try {
       setPending(true);
       const unipool = new web3.eth.Contract(UNIPOOL_ABI, UNIPOOL, { gasLimit: 150000 });
-      await setApprove();
 
       const newAmount = web3.utils.toWei(amount, 'ether');
 
-      await unipool.methods.stake(newAmount).send({ from: address }).then(result => {
-        console.log(result);
-
+      unipool.methods.stake(newAmount).send({ from: address }).then(result => {
         setPending(false);
-        setTransaction(result.transactionHash);
+        setStakeTransaction(result.transactionHash);
         getBalance();
         handleAlert('info', `${amount} UNI-V2 staked`);
-        setShowResult(true);
+        setShowStakeResult(true);
+        setStakeDisabled(true);
       }).catch(err => {
         console.log(err)
       })
     } catch (err) {
-      setDisabled(false);
+      setStakeDisabled(false);
       handleAlert('error', 'Error', err.message);
     }
   }
 
   const handleRefresh = () => {
-    setShowResult(false);
-    setDisabled(false);
+    setShowApproveResult(false);
+    setShowStakeResult(false);
+    setApproveDisabled(false);
+    setStakeDisabled(true);
     setAmount(0);
   }
 
   useEffect(() => {
     if (connected) {
-      setDisabled(false);
+      setApproveDisabled(false);
     }
   }, [connected])
 
@@ -127,7 +154,7 @@ const Stake = props => {
       <div className={classes.contentWrap}>
         <UniBalance balance={balance} connected={connected} />
         <Input
-          disabled={disabled}
+          disabled={approveDisabled}
           fullWidth
           value={amount}
           onChange={e => setAmount(e.target.value)}
@@ -140,15 +167,30 @@ const Stake = props => {
       {!connected ? (
         <Alert severity="warning">Please, connect your wallet to get started.</Alert>
       ) : (
-        <Button variant="contained" color="primary" fullWidth onClick={handleStake} disabled={disabled}>Stake</Button>
+        <div>
+          <Button variant="contained" color="secondary" fullWidth onClick={handleApprove} disabled={approveDisabled}>1. Approve</Button>
+          <Button className={classes.marginTop} variant="contained" color="primary" fullWidth onClick={handleStake} disabled={stakeDisabled}>2. Stake</Button>
+        </div>
       )}
-      {showResult && (
+      {showApproveResult && (
+        <div>
+          <div className={classes.marginTop}>
+            <Alert severity="success">
+              <AlertTitle>Approve Transaction</AlertTitle>
+              <a href={`https://ropsten.etherscan.io/tx/${approveTransaction}`} target="_blank" rel="noopener noreferrer">
+                {approveTransaction}
+              </a>
+            </Alert>
+          </div>
+        </div>
+      )}
+      {showStakeResult && (
         <div>
           <div className={classes.marginTop}>
             <Alert severity="success">
               <AlertTitle>Staking Transaction</AlertTitle>
-              <a href={`https://ropsten.etherscan.io/tx/${transaction}`} target="_blank" rel="noopener noreferrer">
-                {transaction}
+              <a href={`https://ropsten.etherscan.io/tx/${stakeTransaction}`} target="_blank" rel="noopener noreferrer">
+                {stakeTransaction}
               </a>
             </Alert>
           </div>
