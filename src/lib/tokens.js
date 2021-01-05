@@ -119,6 +119,25 @@ const tokenData = {
         pool: undefined
       },
       uniswap: {}
+    },
+    {
+      id: 6,
+      tokenName: "BSC/ETH 5x err",
+      totalStaked: 0,
+      earned: 0,
+      staked: 0,
+      totalLocked: 2000,
+      apr: 0,
+      image: ["/image/tokens/symbol-bsc.png", "/image/tokens/symbol-eth.png"],
+      addresses: {
+        stake: "0x0f1b7d5e235098e9da4ae78199021d7938c77ae6",
+        pool: "0x0baDD80A18b163d9D08280d3350554A8bC948f11"
+      },
+      contract: {
+        stake: undefined,
+        pool: undefined
+      },
+      uniswap: {}
     }
   ]
 };
